@@ -1,0 +1,50 @@
+name: Package
+
+on:
+  push:
+    branches:
+      - native
+  workflow_dispatch:
+ 
+jobs:
+  package:
+    name: Package
+    runs-on: windows-2019
+    environment: NuGet
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Create env
+      run: |
+        &"$env:CONDA/Scripts/conda.exe" create -y --prefix temp_env python=3.10
+
+    - name: Install TensorBoard
+      run: |
+        &"$env:CONDA/shell/condabin/conda-hook.ps1"
+        conda activate ./temp_env
+        ./temp_env/python -m pip install tensorboard==2.10
+
+    - name: Remove unnecessary files
+      shell: pwsh
+      run: |
+        cd ./temp_env
+        ls *.pyc -Recurse | rm
+        ls *.lib -Recurse | rm
+
+    - name: Pack
+      shell: pwsh
+      run: |
+        $date = get-date -Format "yyy-MM-dd"
+        $env_dir = Resolve-Path ./temp_env
+        dotnet pack src/TensorBoard.Python.csproj "-p:PackagedEnv=$env_dir" --version-suffix "CI-$date-$env:GITHUB_RUN_NUMBER" --output bin/Package
+ 
+    - name: Push
+      shell: bash
+      run: dotnet nuget push --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET }} bin/Package/*.nupkg

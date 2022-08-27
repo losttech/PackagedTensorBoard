@@ -8,9 +8,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repo", "Repo", "{FB4287B3-5
 		.gitignore = .gitignore
 		azure-pipelines.yml = azure-pipelines.yml
 		LICENSE = LICENSE
+		.github\workflows\package.yml = .github\workflows\package.yml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "win.TensorBoard.Python", "src\win.TensorBoard.Python.csproj", "{72F2AE35-0A3E-43B2-B103-2AE4AF080C0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TensorBoard.Python", "src\TensorBoard.Python.csproj", "{90AF2674-8692-4F70-95D3-41D839F6E2B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +19,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{72F2AE35-0A3E-43B2-B103-2AE4AF080C0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{72F2AE35-0A3E-43B2-B103-2AE4AF080C0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{72F2AE35-0A3E-43B2-B103-2AE4AF080C0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{72F2AE35-0A3E-43B2-B103-2AE4AF080C0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90AF2674-8692-4F70-95D3-41D839F6E2B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90AF2674-8692-4F70-95D3-41D839F6E2B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90AF2674-8692-4F70-95D3-41D839F6E2B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90AF2674-8692-4F70-95D3-41D839F6E2B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
