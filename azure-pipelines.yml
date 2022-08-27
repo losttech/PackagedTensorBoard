@@ -1,8 +1,5 @@
 name: '$(Date:yyyyMMdd)$(Rev:-rr)'
 
-variables:
-  archiveName: TensorFlow.tar.xz
-
 trigger: none
 # - master
 
@@ -10,24 +7,25 @@ pool:
   vmImage: 'windows-2019'
 
 steps:
+- task: NuGetAuthenticate@1
 - task: CondaEnvironment@0
   displayName: Ensure Conda is installed
   inputs:
-    environmentName: 'py37'
-    packageSpecs: 'python=3.7'
+    environmentName: 'py310'
+    packageSpecs: 'python=3.10'
     cleanEnvironment: true
 - task: CmdLine@2
   displayName: Create Conda env
   inputs:
     script: |
       call activate.bat base
-      conda create -y --prefix $(Build.BinariesDirectory)/CTF python=3.7
+      conda create -y --prefix $(Build.BinariesDirectory)/CTF python=3.10
 - task: CmdLine@2
-  displayName: Install TensorFlow
+  displayName: Install TensorBoard
   inputs:
     script: |
       call activate.bat $(Build.BinariesDirectory)/CTF
-      $(Build.BinariesDirectory)/CTF/python.exe -m pip install "tensorflow-gpu==$(TensorFlow_Version)" "mlagents-envs==$(MLAgents_Envs_Version)"
+      $(Build.BinariesDirectory)/CTF/python.exe -m pip install "tensorboard==$(TensorBoard_Version)"
 - task: PowerShell@2
   displayName: Remove unnecessary files
   inputs:
@@ -36,22 +34,13 @@ steps:
       cd $(Build.BinariesDirectory)/CTF
       ls *.pyc -Recurse | rm
       ls *.lib -Recurse | rm
-- task: ArchiveFiles@2
-  displayName: Archive Conda env
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/CTF'
-    includeRootFolder: false
-    archiveType: 'tar'
-    tarCompression: 'xz'
-    archiveFile: '$(Build.BinariesDirectory)/$(archiveName)'
-    replaceExistingArchive: true
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
     command: 'custom'
     projects: '**/*.csproj'
     custom: 'pack'
-    arguments: '--version-suffix CI-$(Build.BuildNumber) -p:PackagedEnv=$(Build.BinariesDirectory)/$(archiveName) -o $(Build.ArtifactStagingDirectory)'
+    arguments: '--version-suffix CI-$(Build.BuildNumber) -p:PackagedEnv=$(Build.BinariesDirectory)/CTF -o $(Build.ArtifactStagingDirectory)'
 - task: NuGetCommand@2
   displayName: Push
   inputs:
