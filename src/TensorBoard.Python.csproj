@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <Content Include="$(PackagedEnv)/**/*">
-      <PackagePath>runtimes/win-x64/native/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+      <PackagePath>runtimes/win-x64/native/</PackagePath>
       <Pack>true</Pack>
     </Content>
   </ItemGroup>
