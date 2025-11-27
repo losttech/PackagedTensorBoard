@@ -8,7 +8,7 @@ pool:
 
 steps:
 - task: NuGetAuthenticate@1
-- task: CondaEnvironment@0
+- task: CondaEnvironment@1
   displayName: Ensure Conda is installed
   inputs:
     environmentName: 'py310'
