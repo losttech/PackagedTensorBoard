@@ -11,25 +11,10 @@ variables:
 
 steps:
 - task: NuGetAuthenticate@1
-- task: CondaEnvironment@1
-  displayName: Ensure Conda is installed
-  inputs:
-    environmentName: 'py310'
-    packageSpecs: 'python=3.10'
-    updateConda: false
-    cleanEnvironment: true
-- task: CmdLine@2
+- pwsh: C:\Miniconda\Scripts\conda.exe create -y --prefix $(Build.BinariesDirectory)/CTF python=3.10
   displayName: Create Conda env
-  inputs:
-    script: |
-      call activate.bat base
-      conda create -y --prefix $(Build.BinariesDirectory)/CTF python=3.10
-- task: CmdLine@2
+- pwsh: $(Build.BinariesDirectory)/CTF/python.exe -m pip install "tensorboard==$(TensorBoard_Version)"
   displayName: Install TensorBoard
-  inputs:
-    script: |
-      call activate.bat $(Build.BinariesDirectory)/CTF
-      $(Build.BinariesDirectory)/CTF/python.exe -m pip install "tensorboard==$(TensorBoard_Version)"
 - task: PowerShell@2
   displayName: Remove unnecessary files
   inputs:
