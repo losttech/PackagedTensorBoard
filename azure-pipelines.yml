@@ -16,6 +16,7 @@ steps:
   inputs:
     environmentName: 'py310'
     packageSpecs: 'python=3.10'
+    updateConda: false
     cleanEnvironment: true
 - task: CmdLine@2
   displayName: Create Conda env
