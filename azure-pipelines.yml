@@ -6,6 +6,9 @@ trigger: none
 pool:
   vmImage: 'windows-2019'
 
+variables:
+  TensorBoard_Version: '2.20.0'
+
 steps:
 - task: NuGetAuthenticate@1
 - task: CondaEnvironment@1
