@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <PackageId>LostTech.TensorBoard.Python.runtime.win-x64</PackageId>
-    <VersionPrefix>2.10.0</VersionPrefix>
+    <VersionPrefix>2.20.0</VersionPrefix>
     <Authors>Victor Nova</Authors>
     <Company>Lost Tech LLC</Company>
     <Product>Loss</Product>
