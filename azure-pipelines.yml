@@ -13,7 +13,7 @@ steps:
 - task: NuGetAuthenticate@1
 - pwsh: C:\Miniconda\Scripts\conda.exe create -y --prefix $(Build.BinariesDirectory)/CTF python=3.10
   displayName: Create Conda env
-- pwsh: $(Build.BinariesDirectory)/CTF/python.exe -m pip install "tensorboard==$(TensorBoard_Version)"
+- pwsh: $(Build.BinariesDirectory)/CTF/python.exe -m pip install "tensorboard==$(TensorBoard_Version)" "setuptools<81"
   displayName: Install TensorBoard
 - task: PowerShell@2
   displayName: Remove unnecessary files
