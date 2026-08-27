@@ -1,9 +1,12 @@
 ﻿namespace LostTech.TensorFlow {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.InteropServices;
+    using System.Text.RegularExpressions;
     using LostTech.WhichPython;
     using Microsoft.Extensions.DependencyModel;
     using static System.FormattableString;
@@ -52,12 +55,20 @@
             // TODO: more robust detection
             if (!File.Exists(interpreterPath)) Archive.Extract(archivePath, target.FullName);
 
-            // TODO: detect Python version
-            var version = new Version(3, 7);
+            // Python's native dependencies (zlib.dll, vcruntime140.dll etc.)
+            // are deployed next to pythonXY.dll, where the OS module loader
+            // does not look by itself. Add those directories to the process'
+            // search path, like Conda environment activation does.
+            if (IsOSPlatform(Windows)) {
+                AddToProcessPath(target.FullName);
+                AddToProcessPath(Path.Combine(target.FullName, "Library", "bin"));
+            }
+
+            var version = DetectPythonVersion(target) ?? DefaultPythonVersion;
 
             string dllName = IsOSPlatform(Windows)
                 ? Invariant($"python{version.Major}{version.Minor}.dll")
-                : Path.Combine("lib", Invariant($"libpython{version.Major}.{version.Minor}m{DynamicLibraryExtension}"));
+                : Path.Combine("lib", UnixPythonLibraryName(target, version));
 
             target.Refresh();
 
@@ -71,9 +82,87 @@
                 Architecture.X64);
         }
 
-        static readonly string DynamicLibraryExtension =
-            IsOSPlatform(Windows) ? ".dll"
-            : IsOSPlatform(OSX) ? ".dylib"
-            : ".so";
+        static void AddToProcessPath(string directory) {
+            const string name = "PATH";
+            string path = Environment.GetEnvironmentVariable(name) ?? string.Empty;
+            if (path.Split(Path.PathSeparator).Contains(directory, StringComparer.OrdinalIgnoreCase))
+                return;
+            Environment.SetEnvironmentVariable(name, directory + Path.PathSeparator + path);
+        }
+
+        /// <summary>
+        /// The version of Python, that is packaged together with TensorFlow.
+        /// Used as a fallback, when automatic detection is not possible.
+        /// </summary>
+        static readonly Version DefaultPythonVersion = new Version(3, 10);
+
+        /// <summary>
+        /// The version of the packaged Python interpreter is not recorded
+        /// anywhere explicitly, so it is detected from the names of the
+        /// Python shared libraries, deployed alongside it
+        /// (e. g. <c>python310.dll</c> or <c>libpython3.10.so</c>).
+        /// </summary>
+        static Version? DetectPythonVersion(DirectoryInfo environment) {
+            var candidates = IsOSPlatform(Windows)
+                ? WindowsCandidates(environment)
+                : UnixCandidates(environment);
+            return candidates.OrderByDescending(version => version).FirstOrDefault();
+
+            static IEnumerable<Version> WindowsCandidates(DirectoryInfo environment) {
+                if (!environment.Exists)
+                    return Enumerable.Empty<Version>();
+                var pattern = new Regex(@"^python(\d)(\d+)\.dll$",
+                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                return environment.EnumerateFiles()
+                    .Select(file => pattern.Match(file.Name))
+                    .Where(match => match.Success)
+                    .Select(match => new Version(
+                        int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture),
+                        int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture)));
+            }
+
+            static IEnumerable<Version> UnixCandidates(DirectoryInfo environment) {
+                var libDirectory = new DirectoryInfo(Path.Combine(environment.FullName, "lib"));
+                if (!libDirectory.Exists)
+                    return Enumerable.Empty<Version>();
+                var pattern = new Regex(@"^libpython(\d+)\.(\d+)[a-z]*\.",
+                    RegexOptions.CultureInvariant);
+                return libDirectory.EnumerateFileSystemInfos()
+                    .Select(entry => pattern.Match(entry.Name))
+                    .Where(match => match.Success)
+                    .Select(match => new Version(
+                        int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture),
+                        int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture)));
+            }
+        }
+
+        /// <summary>
+        /// Returns the name of the Python shared library file, located in the
+        /// <c>lib</c> subdirectory of the given environment.
+        /// E. g. <c>libpython3.10.so</c> or <c>libpython3.10.dylib</c>.
+        /// Prefers the shortest matching name, so that versioned files, like
+        /// <c>libpython3.10.so.1.0</c>, are only used when no better option exists.
+        /// </summary>
+        static string UnixPythonLibraryName(DirectoryInfo environment, Version version) {
+            // The "m" ABI suffix was only used before Python 3.8 (see PEP 3149)
+            string prefix = version.Minor >= 8
+                ? Invariant($"libpython{version.Major}.{version.Minor}")
+                : Invariant($"libpython{version.Major}.{version.Minor}m");
+
+            var libDirectory = new DirectoryInfo(Path.Combine(environment.FullName, "lib"));
+            if (libDirectory.Exists) {
+                string? match = libDirectory.EnumerateFileSystemInfos()
+                    .Select(entry => entry.Name)
+                    .Where(name => name.StartsWith(prefix, StringComparison.Ordinal))
+                    .OrderBy(name => name.Length)
+                    .FirstOrDefault(name => name.EndsWith(".so", StringComparison.Ordinal)
+                                          || name.EndsWith(".dylib", StringComparison.Ordinal)
+                                          || name.IndexOf(".so.", StringComparison.Ordinal) >= 0);
+                if (match != null)
+                    return match;
+            }
+
+            return prefix + (IsOSPlatform(OSX) ? ".dylib" : ".so");
+        }
     }
 }

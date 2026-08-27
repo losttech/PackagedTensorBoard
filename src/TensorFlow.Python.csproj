@@ -19,11 +19,11 @@
 
   <PropertyGroup>
     <PackageId>LostTech.TensorFlow.Python</PackageId>
-    <VersionPrefix>0.1.15.301</VersionPrefix>
+    <VersionPrefix>0.2.21.1</VersionPrefix>
     <Authors>Victor Milovanov</Authors>
     <Company>Lost Tech LLC</Company>
     <Product>TensorFlow</Product>
-    <Copyright>© Lost Tech LLC 2020</Copyright>
+    <Copyright>© Lost Tech LLC 2025</Copyright>
     <PackageProjectUrl>https://github.com/losttech/PackagedTensorFlow</PackageProjectUrl>
     <RepositoryUrl>https://github.com/losttech/PackagedTensorFlow.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -34,11 +34,18 @@
 
   <ItemGroup>
     <PackageReference Include="LostTech.IO.Links" Version="0.0.3" />
-    <PackageReference Include="LostTech.TensorFlow.Python.runtime.win-x64" Version="[0.1.15.300,0.1.16)" />
-    <PackageReference Include="LostTech.TensorFlow.Python.runtime.linux-x64" Version="[0.1.15.300,0.1.16)" />
-    <PackageReference Include="LostTech.TensorFlow.Python.runtime.osx-x64" Version="[0.1.15.3,0.1.16)" />
+    <!--
+      TensorFlow 2.21 requires Python 3.10-3.13 (3.10 is used).
+      macOS x86_64 is no longer supported by TensorFlow: 2.15.1 is the last
+      version with x86_64 wheels there, so the osx-x64 runtime stays on it.
+      These runtime packages are built by the per-platform packaging branches
+      of this repository and must be published for restore to succeed.
+    -->
+    <PackageReference Include="LostTech.TensorFlow.Python.runtime.win-x64" Version="[0.2.21,0.2.22)" />
+    <PackageReference Include="LostTech.TensorFlow.Python.runtime.linux-x64" Version="[0.2.21,0.2.22)" />
+    <PackageReference Include="LostTech.TensorFlow.Python.runtime.osx-x64" Version="[0.2.15.1,0.2.16)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
-    <PackageReference Include="sharpcompress" Version="0.26.0" />
+    <PackageReference Include="sharpcompress" Version="1.0.0" />
     <PackageReference Include="WhichPython" Version="0.3.0" />
     
     <!-- The following is recommended for public projects -->

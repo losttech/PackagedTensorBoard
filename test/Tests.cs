@@ -22,8 +22,10 @@ namespace LostTech.TensorFlow {
             using var _ = Py.GIL();
             dynamic tf = Py.Import("tensorflow");
             Console.WriteLine(tf.__version__);
-            tf.set_random_seed(42);
-            Assert.IsTrue((bool)tf.test.is_built_with_cuda() == !RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+            tf.random.set_seed(42);
+            // Linux wheels are built with CUDA; on Windows TensorFlow dropped
+            // native GPU support after 2.10, and macOS builds are always CPU-only
+            Assert.IsTrue((bool)tf.test.is_built_with_cuda() == RuntimeInformation.IsOSPlatform(OSPlatform.Linux));
         }
     }
 }

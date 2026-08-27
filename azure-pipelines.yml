@@ -6,11 +6,13 @@ trigger: none
 strategy:
   matrix:
     Linux:
-      imageName: 'ubuntu-18.04'
+      imageName: 'ubuntu-latest'
     MacOS:
-      imageName: 'macos-10.14'
+      # x64 (Intel) image: the packaged runtime is osx-x64, and TensorFlow
+      # no longer publishes macOS x86_64 builds after 2.15.1
+      imageName: 'macos-13'
     Windows:
-      imageName: 'vs2017-win2016'
+      imageName: 'windows-latest'
 
 pool:
   vmImage: $(imageName)
@@ -20,7 +22,7 @@ steps:
   displayName: 'Setup SDK'
   inputs:
     packageType: 'sdk'
-    version: '3.1.x'
+    version: '8.0.x'
 - task: DotNetCoreCLI@2
   displayName: 'Restore'
   inputs:
@@ -40,7 +42,7 @@ steps:
     projects: 'test/**/*.csproj'
 - task: DotNetCoreCLI@2
   displayName: 'Pack'
-  condition: and(succeeded(), eq(variables['imageName'], 'vs2017-win2016'))
+  condition: and(succeeded(), eq(variables['imageName'], 'windows-latest'))
   inputs:
     command: 'custom'
     projects: 'src/**/*.csproj'
@@ -48,7 +50,7 @@ steps:
     arguments: '--version-suffix CI-$(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory)'
 - task: NuGetCommand@2
   displayName: 'Push'
-  condition: and(succeeded(), eq(variables['imageName'], 'vs2017-win2016'))
+  condition: and(succeeded(), eq(variables['imageName'], 'windows-latest'))
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'

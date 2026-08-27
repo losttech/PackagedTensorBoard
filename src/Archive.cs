@@ -9,6 +9,8 @@ namespace LostTech.TensorFlow {
         public static void Extract(string archive, string target) {
             const bool overwrite = true;
 
+            Directory.CreateDirectory(target);
+
             void WriteSymbolicLink(string symlink, string pointTo) {
                 if (Path.IsPathRooted(pointTo))
                     throw new UnauthorizedAccessException();
